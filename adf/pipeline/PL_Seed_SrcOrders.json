@@ -1,0 +1,40 @@
+{
+  "name": "PL_Seed_SrcOrders",
+  "properties": {
+    "description": "One-off: loads raw/landing/orders.csv into src.orders so the watermark pipeline has a database source with modified_at.",
+    "activities": [
+      {
+        "name": "Copy orders to src",
+        "type": "Copy",
+        "dependsOn": [],
+        "policy": { "timeout": "0.00:30:00", "retry": 1, "retryIntervalInSeconds": 30 },
+        "inputs": [
+          {
+            "referenceName": "DS_ADLS_Csv",
+            "type": "DatasetReference",
+            "parameters": { "folder": "landing", "fileName": "orders.csv" }
+          }
+        ],
+        "outputs": [
+          {
+            "referenceName": "DS_AzureSql_Table",
+            "type": "DatasetReference",
+            "parameters": { "schema": "src", "table": "orders" }
+          }
+        ],
+        "typeProperties": {
+          "source": {
+            "type": "DelimitedTextSource",
+            "storeSettings": { "type": "AzureBlobFSReadSettings", "recursive": false },
+            "formatSettings": { "type": "DelimitedTextReadSettings" }
+          },
+          "sink": {
+            "type": "AzureSqlSink",
+            "preCopyScript": "TRUNCATE TABLE src.orders",
+            "writeBehavior": "insert"
+          }
+        }
+      }
+    ]
+  }
+}

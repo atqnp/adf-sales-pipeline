@@ -1,0 +1,201 @@
+customer_id,customer_name,region,segment,signup_date
+C0001,Customer 0001,Tokyo,Consumer,2023-12-04
+C0002,Customer 0002,Kuala Lumpur,Consumer,2025-05-18
+C0003,Customer 0003,Osaka,Small Business,2025-09-19
+C0004,Customer 0004,Singapore,Consumer,2024-05-07
+C0005,Customer 0005,Penang,Consumer,2025-12-02
+C0006,Customer 0006,Tokyo,Consumer,2025-05-08
+C0007,Customer 0007,Singapore,Small Business,2025-12-05
+C0008,Customer 0008,Singapore,Consumer,2023-12-30
+C0009,Customer 0009,Singapore,Corporate,2025-05-21
+C0010,Customer 0010,Penang,Small Business,2025-03-23
+C0011,Customer 0011,Tokyo,Consumer,2024-01-18
+C0012,Customer 0012,Penang,Corporate,2025-03-23
+C0013,Customer 0013,Osaka,Consumer,2023-11-12
+C0014,Customer 0014,Kuala Lumpur,Consumer,2025-09-29
+C0015,Customer 0015,Penang,Consumer,2024-12-30
+C0016,Customer 0016,Kuala Lumpur,Small Business,2025-04-06
+C0017,Customer 0017,Tokyo,Small Business,2024-09-18
+C0018,Customer 0018,Singapore,Consumer,2024-12-10
+C0019,Customer 0019,Tokyo,Small Business,2025-03-07
+C0020,Customer 0020,Singapore,Corporate,2024-05-20
+C0021,Customer 0021,Osaka,Small Business,2025-10-22
+C0022,Customer 0022,Tokyo,Small Business,2025-05-13
+C0023,Customer 0023,Kuala Lumpur,Consumer,2023-08-10
+C0024,Customer 0024,Osaka,Consumer,2024-12-08
+C0025,Customer 0025,Kuala Lumpur,Corporate,2024-03-22
+C0026,Customer 0026,Kuala Lumpur,Consumer,2024-12-18
+C0027,Customer 0027,Kuala Lumpur,Consumer,2024-02-15
+C0028,Customer 0028,Kuala Lumpur,Small Business,2024-02-02
+C0029,Customer 0029,Tokyo,Small Business,2024-03-22
+C0030,Customer 0030,Osaka,Small Business,2023-12-17
+C0031,Customer 0031,Osaka,Consumer,2024-09-15
+C0032,Customer 0032,Penang,Corporate,2024-03-17
+C0033,Customer 0033,Singapore,Consumer,2024-01-31
+C0034,Customer 0034,Kuala Lumpur,Consumer,2025-05-12
+C0035,Customer 0035,Tokyo,Corporate,2024-11-17
+C0036,Customer 0036,Kuala Lumpur,Consumer,2025-05-30
+C0037,Customer 0037,Singapore,Small Business,2025-02-13
+C0038,Customer 0038,Osaka,Small Business,2024-08-08
+C0039,Customer 0039,Penang,Small Business,2024-09-19
+C0040,Customer 0040,Osaka,Corporate,2025-08-12
+C0041,Customer 0041,Osaka,Small Business,2024-06-06
+C0042,Customer 0042,Singapore,Corporate,2023-11-29
+C0043,Customer 0043,Singapore,Corporate,2024-05-14
+C0044,Customer 0044,Penang,Corporate,2025-05-22
+C0045,Customer 0045,Osaka,Small Business,2024-08-14
+C0046,Customer 0046,Tokyo,Consumer,2023-08-04
+C0047,Customer 0047,Tokyo,Consumer,2024-03-30
+C0048,Customer 0048,Osaka,Small Business,2024-10-26
+C0049,Customer 0049,Singapore,Consumer,2024-12-03
+C0050,Customer 0050,Penang,Small Business,2024-09-09
+C0051,Customer 0051,Singapore,Corporate,2024-06-14
+C0052,Customer 0052,Tokyo,Small Business,2023-12-25
+C0053,Customer 0053,Tokyo,Small Business,2024-07-01
+C0054,Customer 0054,Kuala Lumpur,Small Business,2025-01-18
+C0055,Customer 0055,Tokyo,Corporate,2024-10-13
+C0056,Customer 0056,Osaka,Corporate,2025-12-29
+C0057,Customer 0057,Kuala Lumpur,Small Business,2023-11-13
+C0058,Customer 0058,Osaka,Small Business,2025-09-15
+C0059,Customer 0059,Kuala Lumpur,Small Business,2024-07-31
+C0060,Customer 0060,Singapore,Consumer,2025-07-29
+C0061,Customer 0061,Kuala Lumpur,Consumer,2024-06-28
+C0062,Customer 0062,Singapore,Consumer,2024-04-28
+C0063,Customer 0063,Kuala Lumpur,Corporate,2025-12-13
+C0064,Customer 0064,Tokyo,Corporate,2023-07-17
+C0065,Customer 0065,Kuala Lumpur,Consumer,2025-11-03
+C0066,Customer 0066,Osaka,Small Business,2025-10-13
+C0067,Customer 0067,Tokyo,Small Business,2024-08-22
+C0068,Customer 0068,Tokyo,Small Business,2023-11-09
+C0069,Customer 0069,Osaka,Consumer,2024-02-26
+C0070,Customer 0070,Penang,Small Business,2025-07-16
+C0071,Customer 0071,Kuala Lumpur,Small Business,2023-07-23
+C0072,Customer 0072,Singapore,Corporate,2025-05-30
+C0073,Customer 0073,Singapore,Small Business,2024-01-26
+C0074,Customer 0074,Osaka,Small Business,2025-02-16
+C0075,Customer 0075,Penang,Small Business,2024-03-07
+C0076,Customer 0076,Kuala Lumpur,Corporate,2024-07-21
+C0077,Customer 0077,Penang,Consumer,2025-04-23
+C0078,Customer 0078,Osaka,Consumer,2025-01-20
+C0079,Customer 0079,Tokyo,Small Business,2024-06-13
+C0080,Customer 0080,Osaka,Small Business,2025-05-21
+C0081,Customer 0081,Tokyo,Consumer,2024-01-08
+C0082,Customer 0082,Tokyo,Consumer,2025-10-24
+C0083,Customer 0083,Tokyo,Corporate,2025-10-21
+C0084,Customer 0084,Singapore,Consumer,2025-03-22
+C0085,Customer 0085,Penang,Consumer,2024-06-28
+C0086,Customer 0086,Osaka,Small Business,2024-05-27
+C0087,Customer 0087,Singapore,Corporate,2025-04-28
+C0088,Customer 0088,Penang,Corporate,2025-06-21
+C0089,Customer 0089,Tokyo,Consumer,2024-02-27
+C0090,Customer 0090,Penang,Corporate,2024-10-25
+C0091,Customer 0091,Penang,Corporate,2023-08-01
+C0092,Customer 0092,Tokyo,Small Business,2024-03-03
+C0093,Customer 0093,Tokyo,Consumer,2024-11-15
+C0094,Customer 0094,Kuala Lumpur,Consumer,2025-04-22
+C0095,Customer 0095,Osaka,Consumer,2024-07-01
+C0096,Customer 0096,Penang,Consumer,2024-10-26
+C0097,Customer 0097,Osaka,Corporate,2024-09-15
+C0098,Customer 0098,Osaka,Consumer,2024-10-05
+C0099,Customer 0099,Singapore,Consumer,2025-11-11
+C0100,Customer 0100,Singapore,Consumer,2025-09-28
+C0101,Customer 0101,Osaka,Consumer,2024-11-11
+C0102,Customer 0102,Penang,Corporate,2025-05-28
+C0103,Customer 0103,Penang,Consumer,2025-07-17
+C0104,Customer 0104,Penang,Consumer,2024-11-28
+C0105,Customer 0105,Kuala Lumpur,Corporate,2025-03-15
+C0106,Customer 0106,Penang,Small Business,2023-12-15
+C0107,Customer 0107,Singapore,Small Business,2023-12-28
+C0108,Customer 0108,Penang,Consumer,2025-06-21
+C0109,Customer 0109,Kuala Lumpur,Consumer,2025-11-03
+C0110,Customer 0110,Singapore,Small Business,2024-06-25
+C0111,Customer 0111,Tokyo,Small Business,2025-02-14
+C0112,Customer 0112,Tokyo,Consumer,2024-05-13
+C0113,Customer 0113,Penang,Small Business,2023-08-12
+C0114,Customer 0114,Singapore,Consumer,2025-11-04
+C0115,Customer 0115,Singapore,Consumer,2023-08-14
+C0116,Customer 0116,Osaka,Consumer,2024-05-02
+C0117,Customer 0117,Tokyo,Small Business,2023-08-03
+C0118,Customer 0118,Osaka,Corporate,2025-09-01
+C0119,Customer 0119,Singapore,Consumer,2024-05-19
+C0120,Customer 0120,Singapore,Consumer,2024-04-07
+C0121,Customer 0121,Tokyo,Corporate,2024-02-28
+C0122,Customer 0122,Singapore,Small Business,2024-07-15
+C0123,Customer 0123,Kuala Lumpur,Corporate,2025-06-06
+C0124,Customer 0124,Kuala Lumpur,Consumer,2025-04-05
+C0125,Customer 0125,Penang,Consumer,2024-02-14
+C0126,Customer 0126,Kuala Lumpur,Corporate,2025-02-12
+C0127,Customer 0127,Tokyo,Consumer,2024-09-19
+C0128,Customer 0128,Singapore,Small Business,2025-09-21
+C0129,Customer 0129,Tokyo,Small Business,2025-05-28
+C0130,Customer 0130,Singapore,Corporate,2025-08-19
+C0131,Customer 0131,Kuala Lumpur,Consumer,2023-07-16
+C0132,Customer 0132,Osaka,Corporate,2025-03-16
+C0133,Customer 0133,Osaka,Corporate,2023-09-01
+C0134,Customer 0134,Singapore,Small Business,2025-02-26
+C0135,Customer 0135,Singapore,Small Business,2024-07-09
+C0136,Customer 0136,Tokyo,Small Business,2023-09-18
+C0137,Customer 0137,Singapore,Corporate,2024-02-22
+C0138,Customer 0138,Tokyo,Consumer,2025-04-06
+C0139,Customer 0139,Tokyo,Consumer,2023-12-03
+C0140,Customer 0140,Singapore,Consumer,2025-03-29
+C0141,Customer 0141,Kuala Lumpur,Small Business,2025-05-31
+C0142,Customer 0142,Kuala Lumpur,Consumer,2024-01-29
+C0143,Customer 0143,Kuala Lumpur,Small Business,2024-08-19
+C0144,Customer 0144,Kuala Lumpur,Consumer,2025-09-29
+C0145,Customer 0145,Penang,Corporate,2025-11-17
+C0146,Customer 0146,Tokyo,Corporate,2023-11-04
+C0147,Customer 0147,Osaka,Small Business,2025-04-08
+C0148,Customer 0148,Osaka,Small Business,2024-10-06
+C0149,Customer 0149,Singapore,Small Business,2024-10-21
+C0150,Customer 0150,Singapore,Consumer,2025-09-09
+C0151,Customer 0151,Tokyo,Small Business,2025-08-02
+C0152,Customer 0152,Singapore,Consumer,2023-08-31
+C0153,Customer 0153,Kuala Lumpur,Small Business,2024-06-15
+C0154,Customer 0154,Osaka,Corporate,2025-08-24
+C0155,Customer 0155,Tokyo,Corporate,2024-12-24
+C0156,Customer 0156,Tokyo,Corporate,2025-05-31
+C0157,Customer 0157,Osaka,Small Business,2025-09-18
+C0158,Customer 0158,Kuala Lumpur,Small Business,2023-07-21
+C0159,Customer 0159,Penang,Small Business,2023-11-26
+C0160,Customer 0160,Osaka,Consumer,2023-07-31
+C0161,Customer 0161,Osaka,Consumer,2024-11-05
+C0162,Customer 0162,Tokyo,Consumer,2023-12-09
+C0163,Customer 0163,Kuala Lumpur,Corporate,2023-10-03
+C0164,Customer 0164,Osaka,Corporate,2025-07-22
+C0165,Customer 0165,Tokyo,Corporate,2023-07-23
+C0166,Customer 0166,Tokyo,Corporate,2025-05-19
+C0167,Customer 0167,Osaka,Corporate,2025-01-08
+C0168,Customer 0168,Kuala Lumpur,Consumer,2025-05-18
+C0169,Customer 0169,Tokyo,Small Business,2025-06-18
+C0170,Customer 0170,Penang,Corporate,2025-03-22
+C0171,Customer 0171,Tokyo,Corporate,2025-01-07
+C0172,Customer 0172,Singapore,Corporate,2024-02-06
+C0173,Customer 0173,Singapore,Corporate,2025-12-04
+C0174,Customer 0174,Tokyo,Corporate,2025-07-03
+C0175,Customer 0175,Singapore,Corporate,2025-11-23
+C0176,Customer 0176,Tokyo,Small Business,2024-10-14
+C0177,Customer 0177,Kuala Lumpur,Small Business,2023-10-19
+C0178,Customer 0178,Kuala Lumpur,Corporate,2024-04-21
+C0179,Customer 0179,Singapore,Consumer,2024-12-03
+C0180,Customer 0180,Singapore,Consumer,2025-04-16
+C0181,Customer 0181,Tokyo,Small Business,2024-10-12
+C0182,Customer 0182,Tokyo,Small Business,2023-09-29
+C0183,Customer 0183,Singapore,Small Business,2023-12-27
+C0184,Customer 0184,Osaka,Corporate,2024-10-17
+C0185,Customer 0185,Tokyo,Small Business,2025-01-28
+C0186,Customer 0186,Singapore,Corporate,2024-02-22
+C0187,Customer 0187,Tokyo,Small Business,2025-02-28
+C0188,Customer 0188,Singapore,Corporate,2024-02-19
+C0189,Customer 0189,Penang,Corporate,2024-11-15
+C0190,Customer 0190,Kuala Lumpur,Small Business,2025-08-24
+C0191,Customer 0191,Osaka,Corporate,2024-02-21
+C0192,Customer 0192,Penang,Small Business,2023-11-27
+C0193,Customer 0193,Osaka,Small Business,2024-05-29
+C0194,Customer 0194,Kuala Lumpur,Corporate,2024-06-19
+C0195,Customer 0195,Tokyo,Corporate,2025-03-14
+C0196,Customer 0196,Osaka,Corporate,2023-10-20
+C0197,Customer 0197,Singapore,Small Business,2024-03-02
+C0198,Customer 0198,Kuala Lumpur,Corporate,2024-10-06
+C0199,Customer 0199,Penang,Small Business,2025-05-28
+C0200,Customer 0200,Singapore,Corporate,2023-10-12

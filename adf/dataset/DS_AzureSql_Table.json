@@ -1,0 +1,17 @@
+{
+  "name": "DS_AzureSql_Table",
+  "properties": {
+    "description": "Any table in the Azure SQL database.",
+    "linkedServiceName": { "referenceName": "LS_AzureSql", "type": "LinkedServiceReference" },
+    "parameters": {
+      "schema": { "type": "string", "defaultValue": "dbo" },
+      "table": { "type": "string" }
+    },
+    "type": "AzureSqlTable",
+    "typeProperties": {
+      "schema": { "value": "@dataset().schema", "type": "Expression" },
+      "table": { "value": "@dataset().table", "type": "Expression" }
+    },
+    "schema": []
+  }
+}

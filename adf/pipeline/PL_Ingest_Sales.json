@@ -1,0 +1,154 @@
+{
+  "name": "PL_Ingest_Sales",
+  "properties": {
+    "description": "Metadata-driven ingestion: reads active sources from etl.config, copies each CSV from raw/landing to raw/<table>/<run date>/<table>.parquet, logs each copy to etl.run_log, then DF_Transform_Orders upserts dbo.fact_sales.",
+    "variables": {
+      "v_run_date": { "type": "String" }
+    },
+    "activities": [
+      {
+        "name": "Set run date",
+        "type": "SetVariable",
+        "dependsOn": [],
+        "typeProperties": {
+          "variableName": "v_run_date",
+          "value": { "value": "@formatDateTime(utcNow(),'yyyy-MM-dd')", "type": "Expression" }
+        }
+      },
+      {
+        "name": "Lookup config",
+        "type": "Lookup",
+        "dependsOn": [],
+        "policy": { "timeout": "0.00:10:00", "retry": 1, "retryIntervalInSeconds": 30 },
+        "typeProperties": {
+          "source": {
+            "type": "AzureSqlSource",
+            "sqlReaderQuery": "SELECT table_name, source_file, load_type FROM etl.config WHERE is_active = 1"
+          },
+          "dataset": {
+            "referenceName": "DS_AzureSql_Table",
+            "type": "DatasetReference",
+            "parameters": { "schema": "etl", "table": "config" }
+          },
+          "firstRowOnly": false
+        }
+      },
+      {
+        "name": "ForEach table",
+        "type": "ForEach",
+        "dependsOn": [
+          { "activity": "Set run date", "dependencyConditions": ["Succeeded"] },
+          { "activity": "Lookup config", "dependencyConditions": ["Succeeded"] }
+        ],
+        "typeProperties": {
+          "items": { "value": "@activity('Lookup config').output.value", "type": "Expression" },
+          "isSequential": false,
+          "batchCount": 4,
+          "activities": [
+            {
+              "name": "Copy to raw",
+              "type": "Copy",
+              "dependsOn": [],
+              "policy": { "timeout": "0.00:30:00", "retry": 2, "retryIntervalInSeconds": 60 },
+              "inputs": [
+                {
+                  "referenceName": "DS_ADLS_Csv",
+                  "type": "DatasetReference",
+                  "parameters": {
+                    "folder": "landing",
+                    "fileName": { "value": "@item().source_file", "type": "Expression" }
+                  }
+                }
+              ],
+              "outputs": [
+                {
+                  "referenceName": "DS_ADLS_Parquet",
+                  "type": "DatasetReference",
+                  "parameters": {
+                    "container": "raw",
+                    "folder": { "value": "@{item().table_name}/@{variables('v_run_date')}", "type": "Expression" },
+                    "fileName": { "value": "@{item().table_name}.parquet", "type": "Expression" }
+                  }
+                }
+              ],
+              "typeProperties": {
+                "source": {
+                  "type": "DelimitedTextSource",
+                  "storeSettings": { "type": "AzureBlobFSReadSettings", "recursive": false },
+                  "formatSettings": { "type": "DelimitedTextReadSettings" }
+                },
+                "sink": {
+                  "type": "ParquetSink",
+                  "storeSettings": { "type": "AzureBlobFSWriteSettings" },
+                  "formatSettings": { "type": "ParquetWriteSettings" }
+                },
+                "enableStaging": false,
+                "enableSkipIncompatibleRow": true,
+                "logSettings": {
+                  "enableCopyActivityLog": true,
+                  "copyActivityLogSettings": { "logLevel": "Warning", "enableReliableLogging": false },
+                  "logLocationSettings": {
+                    "linkedServiceName": { "referenceName": "LS_ADLS", "type": "LinkedServiceReference" },
+                    "path": "raw/_errors"
+                  }
+                }
+              }
+            },
+            {
+              "name": "Log run",
+              "type": "SqlServerStoredProcedure",
+              "dependsOn": [
+                { "activity": "Copy to raw", "dependencyConditions": ["Succeeded"] }
+              ],
+              "linkedServiceName": { "referenceName": "LS_AzureSql", "type": "LinkedServiceReference" },
+              "typeProperties": {
+                "storedProcedureName": "[etl].[usp_log_run]",
+                "storedProcedureParameters": {
+                  "run_id": { "value": { "value": "@pipeline().RunId", "type": "Expression" }, "type": "String" },
+                  "table_name": { "value": { "value": "@item().table_name", "type": "Expression" }, "type": "String" },
+                  "rows_copied": { "value": { "value": "@activity('Copy to raw').output.rowsCopied", "type": "Expression" }, "type": "Int64" },
+                  "status": { "value": "Succeeded", "type": "String" }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "Transform orders",
+        "type": "ExecuteDataFlow",
+        "dependsOn": [
+          { "activity": "ForEach table", "dependencyConditions": ["Succeeded"] }
+        ],
+        "policy": { "timeout": "0.01:00:00", "retry": 1, "retryIntervalInSeconds": 120 },
+        "typeProperties": {
+          "dataflow": { "referenceName": "DF_Transform_Orders", "type": "DataFlowReference" },
+          "compute": { "coreCount": 8, "computeType": "General" },
+          "traceLevel": "Fine"
+        }
+      },
+      {
+        "name": "Fail transform",
+        "type": "Fail",
+        "dependsOn": [
+          { "activity": "Transform orders", "dependencyConditions": ["Failed"] }
+        ],
+        "typeProperties": {
+          "message": { "value": "Orders transform failed in run @{pipeline().RunId}. Open the Data Flow activity's details in Monitor.", "type": "Expression" },
+          "errorCode": "TRANSFORM_FAILED"
+        }
+      },
+      {
+        "name": "Fail ingest",
+        "type": "Fail",
+        "dependsOn": [
+          { "activity": "ForEach table", "dependencyConditions": ["Failed"] }
+        ],
+        "typeProperties": {
+          "message": { "value": "Sales ingestion failed in run @{pipeline().RunId}. Check Monitor for the failed Copy.", "type": "Expression" },
+          "errorCode": "INGEST_FAILED"
+        }
+      }
+    ]
+  }
+}

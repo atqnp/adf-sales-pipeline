@@ -1,0 +1,16 @@
+{
+  "name": "LS_AzureSql",
+  "properties": {
+    "description": "Azure SQL Database (SQL auth for the lab; in a real project the password comes from Key Vault).",
+    "type": "AzureSqlDatabase",
+    "typeProperties": {
+      "server": "__SQL_SERVER__.database.windows.net",
+      "database": "__SQL_DB__",
+      "encrypt": "mandatory",
+      "trustServerCertificate": false,
+      "authenticationType": "SQL",
+      "userName": "__SQL_ADMIN__",
+      "password": { "type": "SecureString", "value": "__SQL_PASSWORD__" }
+    }
+  }
+}

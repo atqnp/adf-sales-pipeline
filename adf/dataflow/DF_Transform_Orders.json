@@ -1,0 +1,74 @@
+{
+  "name": "DF_Transform_Orders",
+  "properties": {
+    "description": "raw/orders/*/*.parquet -> drop rows without order_id -> cast and derive amount -> dedupe on order_id -> upsert into dbo.fact_sales. Rerun-safe.",
+    "type": "MappingDataFlow",
+    "typeProperties": {
+      "sources": [
+        { "name": "srcOrders", "linkedService": { "referenceName": "LS_ADLS", "type": "LinkedServiceReference" } }
+      ],
+      "sinks": [
+        { "name": "sinkFactSales", "linkedService": { "referenceName": "LS_AzureSql", "type": "LinkedServiceReference" } }
+      ],
+      "transformations": [
+        { "name": "filterValid" },
+        { "name": "deriveColumns" },
+        { "name": "dedupe" },
+        { "name": "markUpsert" }
+      ],
+      "scriptLines": [
+        "source(output(",
+        "          order_id as string,",
+        "          order_date as string,",
+        "          customer_id as string,",
+        "          product_id as string,",
+        "          quantity as string,",
+        "          unit_price as string,",
+        "          modified_at as string",
+        "     ),",
+        "     allowSchemaDrift: true,",
+        "     validateSchema: false,",
+        "     ignoreNoFilesFound: false,",
+        "     format: 'parquet',",
+        "     fileSystem: 'raw',",
+        "     wildcardPaths:['orders/*/*.parquet']) ~> srcOrders",
+        "srcOrders filter(!isNull(order_id) && order_id != '') ~> filterValid",
+        "filterValid derive(order_date = toDate(order_date, 'yyyy-MM-dd'),",
+        "          quantity = toInteger(quantity),",
+        "          amount = toDecimal(toInteger(quantity) * toDecimal(unit_price, 18, 2), 18, 2),",
+        "          loaded_at = currentTimestamp()) ~> deriveColumns",
+        "deriveColumns aggregate(groupBy(order_id),",
+        "     order_date = first(order_date),",
+        "          customer_id = first(customer_id),",
+        "          product_id = first(product_id),",
+        "          quantity = first(quantity),",
+        "          amount = first(amount),",
+        "          loaded_at = first(loaded_at)) ~> dedupe",
+        "dedupe alterRow(upsertIf(true())) ~> markUpsert",
+        "markUpsert sink(allowSchemaDrift: true,",
+        "     validateSchema: false,",
+        "     format: 'table',",
+        "     store: 'sqlserver',",
+        "     schemaName: 'dbo',",
+        "     tableName: 'fact_sales',",
+        "     insertable: false,",
+        "     updateable: false,",
+        "     deletable: false,",
+        "     upsertable: true,",
+        "     keys:['order_id'],",
+        "     skipDuplicateMapInputs: true,",
+        "     skipDuplicateMapOutputs: true,",
+        "     errorHandlingOption: 'stopOnFirstError',",
+        "     mapColumn(",
+        "          order_id,",
+        "          order_date,",
+        "          customer_id,",
+        "          product_id,",
+        "          quantity,",
+        "          amount,",
+        "          loaded_at",
+        "     )) ~> sinkFactSales"
+      ]
+    }
+  }
+}

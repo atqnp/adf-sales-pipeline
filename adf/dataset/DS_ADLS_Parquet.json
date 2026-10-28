@@ -1,0 +1,23 @@
+{
+  "name": "DS_ADLS_Parquet",
+  "properties": {
+    "description": "Any Parquet file in the lake; container, folder and file are set by the caller.",
+    "linkedServiceName": { "referenceName": "LS_ADLS", "type": "LinkedServiceReference" },
+    "parameters": {
+      "container": { "type": "string", "defaultValue": "raw" },
+      "folder": { "type": "string" },
+      "fileName": { "type": "string" }
+    },
+    "type": "Parquet",
+    "typeProperties": {
+      "location": {
+        "type": "AzureBlobFSLocation",
+        "fileSystem": { "value": "@dataset().container", "type": "Expression" },
+        "folderPath": { "value": "@dataset().folder", "type": "Expression" },
+        "fileName": { "value": "@dataset().fileName", "type": "Expression" }
+      },
+      "compressionCodec": "snappy"
+    },
+    "schema": []
+  }
+}

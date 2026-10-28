@@ -1,0 +1,100 @@
+{
+  "name": "PL_Incremental_Orders",
+  "properties": {
+    "description": "Watermark pattern: copy only src.orders rows with old_wm < modified_at <= new_wm to raw/orders_incr/, then advance the watermark on success.",
+    "activities": [
+      {
+        "name": "LookupOldWM",
+        "type": "Lookup",
+        "dependsOn": [],
+        "policy": { "timeout": "0.00:10:00", "retry": 1, "retryIntervalInSeconds": 30 },
+        "typeProperties": {
+          "source": {
+            "type": "AzureSqlSource",
+            "sqlReaderQuery": "SELECT CONVERT(varchar(27), last_modified, 121) AS last_modified FROM etl.watermark WHERE table_name = 'orders'"
+          },
+          "dataset": {
+            "referenceName": "DS_AzureSql_Table",
+            "type": "DatasetReference",
+            "parameters": { "schema": "etl", "table": "watermark" }
+          },
+          "firstRowOnly": true
+        }
+      },
+      {
+        "name": "LookupNewWM",
+        "type": "Lookup",
+        "dependsOn": [],
+        "policy": { "timeout": "0.00:10:00", "retry": 1, "retryIntervalInSeconds": 30 },
+        "typeProperties": {
+          "source": {
+            "type": "AzureSqlSource",
+            "sqlReaderQuery": "SELECT CONVERT(varchar(27), MAX(modified_at), 121) AS new_wm FROM src.orders"
+          },
+          "dataset": {
+            "referenceName": "DS_AzureSql_Table",
+            "type": "DatasetReference",
+            "parameters": { "schema": "src", "table": "orders" }
+          },
+          "firstRowOnly": true
+        }
+      },
+      {
+        "name": "Copy changed orders",
+        "type": "Copy",
+        "dependsOn": [
+          { "activity": "LookupOldWM", "dependencyConditions": ["Succeeded"] },
+          { "activity": "LookupNewWM", "dependencyConditions": ["Succeeded"] }
+        ],
+        "policy": { "timeout": "0.00:30:00", "retry": 2, "retryIntervalInSeconds": 60 },
+        "inputs": [
+          {
+            "referenceName": "DS_AzureSql_Table",
+            "type": "DatasetReference",
+            "parameters": { "schema": "src", "table": "orders" }
+          }
+        ],
+        "outputs": [
+          {
+            "referenceName": "DS_ADLS_Parquet",
+            "type": "DatasetReference",
+            "parameters": {
+              "container": "raw",
+              "folder": { "value": "orders_incr/@{formatDateTime(utcNow(),'yyyyMMddHHmmss')}", "type": "Expression" },
+              "fileName": "orders.parquet"
+            }
+          }
+        ],
+        "typeProperties": {
+          "source": {
+            "type": "AzureSqlSource",
+            "sqlReaderQuery": {
+              "value": "SELECT * FROM src.orders WHERE modified_at > '@{activity('LookupOldWM').output.firstRow.last_modified}' AND modified_at <= '@{activity('LookupNewWM').output.firstRow.new_wm}'",
+              "type": "Expression"
+            }
+          },
+          "sink": {
+            "type": "ParquetSink",
+            "storeSettings": { "type": "AzureBlobFSWriteSettings" },
+            "formatSettings": { "type": "ParquetWriteSettings" }
+          }
+        }
+      },
+      {
+        "name": "Update watermark",
+        "type": "SqlServerStoredProcedure",
+        "dependsOn": [
+          { "activity": "Copy changed orders", "dependencyConditions": ["Succeeded"] }
+        ],
+        "linkedServiceName": { "referenceName": "LS_AzureSql", "type": "LinkedServiceReference" },
+        "typeProperties": {
+          "storedProcedureName": "[etl].[usp_update_watermark]",
+          "storedProcedureParameters": {
+            "table_name": { "value": "orders", "type": "String" },
+            "wm": { "value": { "value": "@activity('LookupNewWM').output.firstRow.new_wm", "type": "Expression" }, "type": "String" }
+          }
+        }
+      }
+    ]
+  }
+}
