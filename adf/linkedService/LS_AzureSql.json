@@ -1,16 +1,20 @@
 {
   "name": "LS_AzureSql",
   "properties": {
-    "description": "Azure SQL Database (SQL auth for the lab; in a real project the password comes from Key Vault).",
+    "description": "Azure SQL Database. The password is a Key Vault reference, so no secret lives in the factory or in Git.",
     "type": "AzureSqlDatabase",
     "typeProperties": {
-      "server": "__SQL_SERVER__.database.windows.net",
-      "database": "__SQL_DB__",
+      "server": "sql-adf-lab-214a8.database.windows.net",
+      "database": "sqldb-sales",
       "encrypt": "mandatory",
       "trustServerCertificate": false,
       "authenticationType": "SQL",
-      "userName": "__SQL_ADMIN__",
-      "password": { "type": "SecureString", "value": "__SQL_PASSWORD__" }
+      "userName": "sqladminuser",
+      "password": {
+        "type": "AzureKeyVaultSecret",
+        "store": { "referenceName": "LS_KeyVault", "type": "LinkedServiceReference" },
+        "secretName": "sql-admin-password"
+      }
     }
   }
 }

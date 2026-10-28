@@ -24,6 +24,7 @@ else
   SQL_ADMIN="sqladminuser"
   SQL_PASSWORD="Adf!$(openssl rand -hex 10)"
   ADF="adf-sales-lab-${SUFFIX}"          # factory names are globally unique too
+  KEYVAULT="kv-adf-lab-${SUFFIX}"
   umask 077
   cat >"$ENV_FILE" <<EOF
 LOCATION=$LOCATION
@@ -34,8 +35,13 @@ SQL_DB=$SQL_DB
 SQL_ADMIN=$SQL_ADMIN
 SQL_PASSWORD='$SQL_PASSWORD'
 ADF=$ADF
+KEYVAULT=$KEYVAULT
 EOF
   echo "Saved names and SQL password to lab.env (keep it out of Git)."
+fi
+if [[ -z "${KEYVAULT:-}" ]]; then   # lab.env from before Key Vault was added
+  KEYVAULT="kv-adf-lab-${STORAGE#stadflab}"
+  echo "KEYVAULT=$KEYVAULT" >>"$ENV_FILE"
 fi
 
 step() { printf '\n==> %s\n' "$*"; }
@@ -44,7 +50,7 @@ step "Checking Azure login"
 az account show --query "{subscription:name, user:user.name}" -o table
 
 step "Registering resource providers (first run on a new subscription can take a minute)"
-for ns in Microsoft.Storage Microsoft.Sql Microsoft.DataFactory; do
+for ns in Microsoft.Storage Microsoft.Sql Microsoft.DataFactory Microsoft.KeyVault; do
   az provider register --namespace "$ns" --wait -o none
 done
 az extension add --name datafactory --upgrade --only-show-errors -o none
@@ -95,7 +101,9 @@ if ! az sql db show -n "$SQL_DB" -s "$SQL_SERVER" -g "$RG" -o none 2>/dev/null; 
 fi
 
 step "Data Factory $ADF (V2, system-assigned managed identity)"
-az datafactory create -n "$ADF" -g "$RG" -l "$LOCATION" -o none
+# Create only if missing: re-PUTting the factory would drop its Git configuration.
+az datafactory show -n "$ADF" -g "$RG" -o none 2>/dev/null \
+  || az datafactory create -n "$ADF" -g "$RG" -l "$LOCATION" -o none
 ADF_PRINCIPAL="$(az datafactory show -n "$ADF" -g "$RG" --query identity.principalId -o tsv)"
 if [[ -z "$ADF_PRINCIPAL" ]]; then
   echo "Factory has no managed identity; enable it in Portal > Data factory > Managed identities, then rerun."
@@ -109,6 +117,23 @@ az role assignment create --assignee-object-id "$ADF_PRINCIPAL" \
   --role "Storage Blob Data Contributor" --scope "$STORAGE_ID" -o none 2>/dev/null \
   || echo "(role assignment already exists)"
 
+step "Key Vault $KEYVAULT holding the SQL password (ADF reads it with its managed identity)"
+az keyvault show -n "$KEYVAULT" -g "$RG" -o none 2>/dev/null \
+  || az keyvault create -n "$KEYVAULT" -g "$RG" -l "$LOCATION" \
+       --enable-rbac-authorization true --retention-days 7 -o none
+KV_ID="$(az keyvault show -n "$KEYVAULT" -g "$RG" --query id -o tsv)"
+ME="$(az ad signed-in-user show --query id -o tsv)"
+az role assignment create --assignee-object-id "$ME" --assignee-principal-type User \
+  --role "Key Vault Secrets Officer" --scope "$KV_ID" -o none 2>/dev/null || true
+az role assignment create --assignee-object-id "$ADF_PRINCIPAL" --assignee-principal-type ServicePrincipal \
+  --role "Key Vault Secrets User" --scope "$KV_ID" -o none 2>/dev/null || true
+for i in {1..12}; do   # new role assignments take a minute or two to apply
+  az keyvault secret set --vault-name "$KEYVAULT" -n sql-admin-password \
+    --value "$SQL_PASSWORD" -o none 2>/dev/null && { echo "  secret sql-admin-password stored"; break; }
+  [[ $i == 12 ]] && { echo "Could not write the secret; rerun setup.sh in a few minutes."; exit 1; }
+  sleep 15
+done
+
 SUB_ID="$(az account show --query id -o tsv)"
 cat <<EOF
 
@@ -116,7 +141,7 @@ Done. Values you will type into ADF Studio:
   ADLS Gen2 URL      https://$STORAGE.dfs.core.windows.net
   SQL server         $SQL_SERVER.database.windows.net
   SQL database       $SQL_DB
-  SQL user           $SQL_ADMIN   (password is in lab.env)
+  SQL user           $SQL_ADMIN   (password in lab.env and Key Vault $KEYVAULT)
   Factory principal  $ADF_PRINCIPAL
 
 Next:

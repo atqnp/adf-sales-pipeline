@@ -4,7 +4,7 @@
     "description": "ADLS Gen2 lake. No credential: ADF authenticates with its system-assigned managed identity (Storage Blob Data Contributor).",
     "type": "AzureBlobFS",
     "typeProperties": {
-      "url": "https://__STORAGE__.dfs.core.windows.net"
+      "url": "https://stadflab214a8.dfs.core.windows.net"
     }
   }
 }

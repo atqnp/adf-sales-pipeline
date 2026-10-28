@@ -1,0 +1,67 @@
+{
+  "name": "PL_Load_Orders_Window",
+  "properties": {
+    "description": "Copies src.orders rows with p_window_start <= modified_at < p_window_end to raw/orders_window/<yyyyMMdd>/. Driven by TR_Tumbling_Orders_Daily, so each window is independent, backfillable and rerunnable.",
+    "parameters": {
+      "p_window_start": { "type": "string" },
+      "p_window_end": { "type": "string" }
+    },
+    "activities": [
+      {
+        "name": "Copy window",
+        "type": "Copy",
+        "dependsOn": [],
+        "policy": { "timeout": "0.00:30:00", "retry": 2, "retryIntervalInSeconds": 60 },
+        "inputs": [
+          {
+            "referenceName": "DS_AzureSql_Table",
+            "type": "DatasetReference",
+            "parameters": { "schema": "src", "table": "orders" }
+          }
+        ],
+        "outputs": [
+          {
+            "referenceName": "DS_ADLS_Parquet",
+            "type": "DatasetReference",
+            "parameters": {
+              "container": "raw",
+              "folder": { "value": "orders_window/@{formatDateTime(pipeline().parameters.p_window_start,'yyyyMMdd')}", "type": "Expression" },
+              "fileName": "orders.parquet"
+            }
+          }
+        ],
+        "typeProperties": {
+          "source": {
+            "type": "AzureSqlSource",
+            "sqlReaderQuery": {
+              "value": "SELECT * FROM src.orders WHERE modified_at >= '@{formatDateTime(pipeline().parameters.p_window_start,'yyyy-MM-dd HH:mm:ss')}' AND modified_at < '@{formatDateTime(pipeline().parameters.p_window_end,'yyyy-MM-dd HH:mm:ss')}'",
+              "type": "Expression"
+            }
+          },
+          "sink": {
+            "type": "ParquetSink",
+            "storeSettings": { "type": "AzureBlobFSWriteSettings" },
+            "formatSettings": { "type": "ParquetWriteSettings" }
+          }
+        }
+      },
+      {
+        "name": "Log window",
+        "type": "SqlServerStoredProcedure",
+        "dependsOn": [
+          { "activity": "Copy window", "dependencyConditions": ["Succeeded"] }
+        ],
+        "linkedServiceName": { "referenceName": "LS_AzureSql", "type": "LinkedServiceReference" },
+        "typeProperties": {
+          "storedProcedureName": "[etl].[usp_log_run]",
+          "storedProcedureParameters": {
+            "run_id": { "value": { "value": "@pipeline().RunId", "type": "Expression" }, "type": "String" },
+            "table_name": { "value": { "value": "@concat('orders_window_', formatDateTime(pipeline().parameters.p_window_start,'yyyyMMdd'))", "type": "Expression" }, "type": "String" },
+            "rows_copied": { "value": { "value": "@activity('Copy window').output.rowsCopied", "type": "Expression" }, "type": "Int64" },
+            "status": { "value": "Succeeded", "type": "String" }
+          }
+        }
+      }
+    ]
+  }
+}

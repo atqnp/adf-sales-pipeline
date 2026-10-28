@@ -5,6 +5,9 @@
 # Usage: ./scripts/deploy.sh                                  deploy only
 #        ./scripts/deploy.sh --run PL_Ingest_Sales [--run ...] deploy, then run each pipeline in order
 #        ./scripts/deploy.sh --no-deploy --run PL_Ingest_Sales run without redeploying
+#        ./scripts/deploy.sh --start-trigger TR_Tumbling_Orders_Daily  deploy, then start a trigger
+# Started triggers are stopped before deployment and restarted after it, as in
+# Microsoft's pre/post-deployment script (a started trigger can't be updated).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -12,10 +15,11 @@ source "$ROOT/lab.env"
 BUILD="$(mktemp -d)"
 trap 'rm -rf "$BUILD"' EXIT
 
-RUNS=(); DEPLOY=1
+RUNS=(); STARTS=(); DEPLOY=1
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --run) RUNS+=("$2"); shift 2 ;;
+    --start-trigger) STARTS+=("$2"); shift 2 ;;
     --no-deploy) DEPLOY=0; shift ;;
     *) echo "unknown argument: $1"; exit 2 ;;
   esac
@@ -23,26 +27,24 @@ done
 
 step() { printf '\n==> %s\n' "$*"; }
 
-# adf/ is kept in ADF's Git layout ({"name", "properties"}) with placeholders.
-# Deployed with az rest (raw ARM PUT): the az datafactory commands re-serialize
-# through old SDK models and silently drop fields such as a SecureString password.
+# adf/ is the factory's Git root ({"name", "properties"} per file, dev names,
+# secrets only as Key Vault references). Deployed with az rest (raw ARM PUT):
+# the az datafactory commands re-serialize through old SDK models and
+# silently drop fields such as a SecureString password.
 render() {
-  python3 -I - "$1" "$2" <<'PY'
-import json, os, sys
-src, dst = sys.argv[1], sys.argv[2]
-text = open(src).read()
-for key in ("STORAGE", "SQL_SERVER", "SQL_DB", "SQL_ADMIN", "SQL_PASSWORD"):
-    text = text.replace(f"__{key}__", os.environ[key])
-json.dump({"properties": json.loads(text)["properties"]}, open(dst, "w"))
-PY
+  python3 -I -c 'import json, sys; json.dump({"properties": json.load(open(sys.argv[1]))["properties"]}, open(sys.argv[2], "w"))' "$1" "$2"
 }
-export STORAGE SQL_SERVER SQL_DB SQL_ADMIN SQL_PASSWORD
 
 FACTORY_URL="https://management.azure.com/subscriptions/$(az account show --query id -o tsv)/resourceGroups/$RG/providers/Microsoft.DataFactory/factories/$ADF"
 
 deploy() {  # deploy <adf subfolder> <ARM collection name>
   [[ -d "$ROOT/adf/$1" ]] || return 0
+  # Key Vault first: other linked services reference it.
+  local f n first=() rest=()
   for f in "$ROOT/adf/$1"/*.json; do
+    [[ "$f" == *KeyVault* ]] && first+=("$f") || rest+=("$f")
+  done
+  for f in "${first[@]+"${first[@]}"}" "${rest[@]}"; do
     n="$(basename "$f" .json)"; render "$f" "$BUILD/$n.json"
     az rest --method put --url "$FACTORY_URL/$2/$n?api-version=2018-06-01" \
       --body "@$BUILD/$n.json" -o none
@@ -77,11 +79,23 @@ if (( DEPLOY )); then
     echo "sqlcmd not found (brew install sqlcmd); run sql/01_schema.sql in the Portal Query editor first."
   fi
 
+  step "Stopping started triggers"
+  STARTED="$(az datafactory trigger list --factory-name "$ADF" -g "$RG" \
+    --query "[?properties.runtimeState=='Started'].name" -o tsv)"
+  for t in $STARTED; do az datafactory trigger stop --factory-name "$ADF" -g "$RG" -n "$t" -o none; echo "  $t"; done
+
   step "Linked services";            deploy linkedService linkedservices
   step "Datasets";                   deploy dataset datasets
   step "Data flows";                 deploy dataflow dataflows
   step "Pipelines";                  deploy pipeline pipelines
-  step "Triggers (created stopped)"; deploy trigger triggers
+  step "Triggers";                   deploy trigger triggers
+
+  for t in $STARTED; do STARTS+=("$t"); done
 fi
+
+for t in "${STARTS[@]+"${STARTS[@]}"}"; do
+  step "Starting trigger $t"
+  az datafactory trigger start --factory-name "$ADF" -g "$RG" -n "$t" -o none
+done
 
 for p in "${RUNS[@]+"${RUNS[@]}"}"; do run_pipeline "$p"; done

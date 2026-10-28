@@ -1,0 +1,10 @@
+{
+  "name": "LS_KeyVault",
+  "properties": {
+    "description": "Secrets for other linked services. ADF reads them with its managed identity (Key Vault Secrets User).",
+    "type": "AzureKeyVault",
+    "typeProperties": {
+      "baseUrl": "https://kv-adf-lab-214a8.vault.azure.net/"
+    }
+  }
+}
